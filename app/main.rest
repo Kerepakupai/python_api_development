@@ -1,0 +1,32 @@
+GET http://127.0.0.1:8000/posts HTTP/1.1
+
+
+### 
+GET http://127.0.0.1:8000/posts/1 HTTP/1.1
+
+
+###
+GET http://127.0.0.1:8000/posts/latest HTTP/1.1
+
+
+###
+POST http://127.0.0.1:8000/posts HTTP/1.1
+content-type: application/json
+
+{
+    "title": "new title",
+    "content": "new content"
+}
+
+###
+DELETE http://127.0.0.1:8000/posts/1 HTTP/1.1
+
+
+### 
+PUT http://127.0.0.1:8000/posts/1 HTTP/1.1
+content-type: application/json
+
+{
+    "title": "title updated",
+    "content": "content updated"
+}
