@@ -1,0 +1,22 @@
+### CREATE USER
+POST http://127.0.0.1:8000/users HTTP/1.1
+content-type: application/json
+
+{
+    "email": "duentes5@gmail.com",
+    "password": "Password!"
+}
+
+### CREATE USER [EMAIL VALIDATOR]
+POST http://127.0.0.1:8000/users HTTP/1.1
+content-type: application/json
+
+{
+    "email": "dfuentes",
+    "password": "Password!"
+}
+
+### GET USER BY ID
+GET http://127.0.0.1:8000/users/1 HTTP/1.1
+content-type: application/json
+
