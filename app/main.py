@@ -19,7 +19,7 @@ while True:
             cursor_factory=RealDictCursor)
 
         cursor = conn.cursor()
-        print("Database connection was successfull!")
+        print("Database connection was successful!")
         break
     except Exception as err:
         print("Database connection failed")

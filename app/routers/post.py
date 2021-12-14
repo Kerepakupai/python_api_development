@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
-from .. import models, schemas
+from .. import models, schemas, oauth2
 from ..database import get_db
 
 router = APIRouter(
@@ -11,7 +11,7 @@ router = APIRouter(
 
 
 @router.get("/", response_model=List[schemas.Post])
-async def get_posts(db: Session = Depends(get_db)):
+async def get_posts(db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cursor.execute(""" SELECT * FROM posts """)
     # posts = cursor.fetchall()
     posts = db.query(models.Post).all()
@@ -25,13 +25,14 @@ async def get_posts(db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=schemas.Post)
-async def get_post(id: int, db: Session = Depends(get_db)):
+async def get_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # post = find_post(id)
     # cursor.execute(""" SELECT * FROM posts WHERE id=%s """, (str(id)))
     # post = cursor.fetchone()
     # db.query(models.Post).filter(models.Post.id == id).first()
     post = db.query(models.Post).get(id)
     print(post)
+
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, 
@@ -49,7 +50,10 @@ async def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
-async def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
+async def create_posts(
+        post: schemas.PostCreate,
+        db: Session = Depends(get_db),
+        user_id: int = Depends(oauth2.get_current_user)):
     # post_dict = post.dict()
     # post_dict['id'] = randrange(1, 1000000)
     # print(post.dict())
@@ -60,6 +64,7 @@ async def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # post = cursor.fetchone()
     # conn.commit()
     # new_post = models.Post(title=post.title, content=post.content, published=post.published)
+    print(user_id)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -69,14 +74,14 @@ async def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(id: int, db: Session = Depends(get_db)):
+async def delete_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # index = find_index_post(id)
     # cursor.execute(""" DELETE FROM posts WHERE id=%s RETURNING * """, (str(id)))
     # post = cursor.fetchone()
     # conn.commit()
     post = db.query(models.Post).filter(models.Post.id == id)
 
-    if post.first() == None:
+    if post.first() is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id: {id} was not found" )
@@ -89,7 +94,12 @@ async def delete_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=schemas.Post)
-async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
+async def update_post(
+        id: int,
+        post: schemas.PostCreate,
+        db: Session = Depends(get_db),
+        user_id: int = Depends(oauth2.get_current_user)):
+
     # index = find_index_post(id)
     #cursor.execute(""" 
     #    UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""", 
@@ -100,7 +110,7 @@ async def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(g
     post_query = db.query(models.Post).filter(models.Post.id == id)
     old_post = post_query.first()
 
-    if old_post == None:
+    if old_post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id: {id} was not found" )
